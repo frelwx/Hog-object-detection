@@ -1,0 +1,1 @@
+img_path = "/home/lwx/HOG/data/csgo225labeled/images/img_90.jpg"
