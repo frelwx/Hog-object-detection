@@ -8,7 +8,41 @@ label_root = "/home/lwx/HOG/data/csgo225labeled/labels"
 img_root = "/home/lwx/HOG/data/csgo225labeled/images"
 crop_path = "/home/lwx/HOG/data/csgo225labeled/postives"
 neg_path = "/home/lwx/HOG/data/csgo225labeled/negtives"
+def remove_no_lable():
+    imgs = os.listdir(img_root)
+    lables = os.listdir(label_root)
+    imgs.sort()
+    lables.sort()
+    print(len(imgs), len(lables))
+    for idx in range(0, len(imgs)):
+        item = imgs[idx].split('.')[0]
+        item = item + ".txt"
+        if(item not in lables):
+            print(item, imgs[idx])
+            os.system("rm " + os.path.join(img_root, imgs[idx]))
+def remove_empty():
+    imgs = os.listdir(img_root)
+    lables = os.listdir(label_root)
+    imgs.sort()
+    lables.sort()
+    print(len(imgs), len(lables))
+    for idx in range(0, len(imgs)):
+        coor_path = os.path.join(label_root, lables[idx])
+        with open(coor_path, 'r') as f:
+            coor = f.readlines()
+        flag =  False
+        for x in coor:
+            if (x[0] == '2' or x[0] == '3'):
+                flag = True
+                break
+        if flag == False:
+            rm_path = "rm " + coor_path
+            os.system(rm_path)
+            rm_path = "rm " + os.path.join(img_root, imgs[idx])
+            os.system(rm_path)
+
 def get_raw_pos_and_neg():
+    neg_ratio = 3
     if os.path.exists(crop_path):
         os.system("rm -r " + crop_path)
     os.system("mkdir " + crop_path)
@@ -19,12 +53,7 @@ def get_raw_pos_and_neg():
     labels = os.listdir(label_root)
     imgs.sort()
     labels.sort()
-    # print(len(imgs), len(labels))
-    # for idx in range(0, len(imgs)):
-    #     item = imgs[idx].split('.')[0]
-    #     item = item + ".txt"
-    #     if(item not in labels):
-    #         print(item, imgs[idx])
+
     number = 0
     final_label_text = []
     hs = []
@@ -59,12 +88,12 @@ def get_raw_pos_and_neg():
                 pos_img.save(crop_path + "/" + "p" +str(number) + ".jpg")
                 final_label_text.append(crop_path + "/" + "p" +str(number) + ".jpg " + "1\n")
 
-                n_top = random.randint(0, H - h - 1)
-                n_left = random.randint(0, W - w - 1)
-                neg_img = torchvision.transforms.functional.crop(img, n_top, n_left, h, w)
-                neg_img.save(neg_path + "/" + "n" + str(number) + ".jpg")
-
-                final_label_text.append(neg_path + "/" + "n" + str(number) + ".jpg " + "0\n")
+                for i in range(0, neg_ratio):
+                    n_top = random.randint(0, H - h - 1)
+                    n_left = random.randint(0, W - w - 1)
+                    neg_img = torchvision.transforms.functional.crop(img, n_top, n_left, h, w)
+                    neg_img.save(neg_path + "/" + "n" + str(number) + "_" + str(i) + ".jpg")
+                    final_label_text.append(neg_path + "/" + "n" + str(number) + "_" + str(i) + ".jpg " + "0\n")
                 number += 1
     with open('/home/lwx/HOG/data/csgo225labeled/new_label.txt','w') as f:
         f.write(''.join(final_label_text))
@@ -79,4 +108,7 @@ def img_reshape():
         img = Image.open(items[idx])
         img = img.resize((56, 56 * 2), Image.Resampling.LANCZOS)
         img.save(items[idx])
-img_reshape()
+remove_no_lable()
+# remove_empty()
+# get_raw_pos_and_neg()
+# img_reshape()
