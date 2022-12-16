@@ -1,2 +1,2 @@
 
-    model = model.to(device)
+    os.system("rm -r ./predict_example")

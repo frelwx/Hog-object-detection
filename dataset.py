@@ -21,8 +21,8 @@ class detection_dataset(torch.utils.data.Dataset):
         self.imgs.sort()
         self.lables.sort()
     def __len__(self):
-        # return len(self.imgs)
-        return 1
+        return len(self.imgs)
+        # return 1
     def get_feature(self, img):
         fd = hog(img, orientations=8, pixels_per_cell=(8, 8),
                     cells_per_block=(2, 2), channel_axis=-1)
@@ -30,14 +30,15 @@ class detection_dataset(torch.utils.data.Dataset):
         fd = fd.to(dtype=torch.float32)
         return fd
     def __getitem__(self, idx):
+        # idx = 97
         img_path = os.path.join(self.root, "images", self.imgs[idx])
         img = cv2.imread(img_path)
         coor_path = os.path.join(self.root, "labels", self.lables[idx])
         with open(coor_path, 'r') as f:
             coor = f.readlines()
         H, W = img.shape[0], img.shape[1]
-        x_bias = 5
-        y_bias = 5
+        x_bias = 10
+        y_bias = 10
         new_w = 56
         new_h = new_w * 2
         samples = []
@@ -65,7 +66,7 @@ class detection_dataset(torch.utils.data.Dataset):
                         crop_img = img[bbox[1]:bbox[3], bbox[0]:bbox[2], :]
                         samples.append(self.get_feature(crop_img))
                         lables.append(0)
-                        xy.append((new_x_0, new_y_0))
+                        xy.append((bbox[0].item(), bbox[1].item()))
                         # cv2.imwrite("./test/" + str(bbox[0]) + "_" + str(bbox[1]) + ".jpg", crop_img)
                         flag = True
                         while(flag):
@@ -83,7 +84,7 @@ class detection_dataset(torch.utils.data.Dataset):
                         samples.append(self.get_feature(neg_img))
                         lables.append(1)
                         tmp_bbox = utils._box_xyxy_to_cxcywh(tmp_bbox).numpy()
-                        xy.append((tmp_bbox[0], tmp_bbox[1]))
+                        # xy.append((tmp_bbox[0], tmp_bbox[1]))
                         cnt += 1
         if(len(samples) < 10):
             print(idx, len(samples), self.lables[idx])
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     # img = torchvision.transforms.ToPILImage()(img)
     # img.save("tmpp.jpg")
     dataset = detection_dataset()
-    imgs, labels, xy = dataset[0]
+    imgs, labels, xy = dataset[97]
     print(imgs.shape, len(labels), xy)
 
     
