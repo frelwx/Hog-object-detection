@@ -53,7 +53,7 @@ def recognition_one_crop(img):
     predict = torch.nn.functional.softmax(predict, dim=-1)  
     return predict[0].item()
 def recognition_all(img):
-    rois = sliding_window(img, (112, 56), (20, 20))
+    rois = sliding_window(img, (112, 56), (10, 20))
     possibilitys = []
     print(len(rois))
     for idx in range(0, len(rois)):
@@ -79,7 +79,7 @@ def recognition_all(img):
         cv2.putText(img, str(round(possibilitys[i][0], 2)), (bbox[1], bbox[0]), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 1, cv2.LINE_AA)
         _, tmp = hog(original_img[bbox[0]:bbox[0] + 112, bbox[1]:bbox[1] + 56, :], orientations=8, pixels_per_cell=(8, 8),
                 cells_per_block=(2, 2), channel_axis=-1, visualize=True)
-        cv2.imwrite("./hog" + str(i) + ".jpg", tmp)
+        cv2.imwrite("./hog" + str(i) + ".jpg", tmp * 4)
         cv2.imwrite("./crop" + str(i) + ".jpg", original_img[bbox[0]:bbox[0] + 112, bbox[1]:bbox[1] + 56, :])
     cv2.imwrite("./bbox.jpg", img)
 # print(recognition_one_crop(cv2.imread("/home/lwx/HOG/data/csgo225labeled/postives/p119.jpg")))
